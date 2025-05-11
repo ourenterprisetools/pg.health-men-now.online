@@ -145,6 +145,48 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
     </div>
 
 <script type="text/javascript" id="scr_68200d9065dc0f433d443f33"> var s=document.createElement("script"); s.src="https://scripts.converteai.net/dc2bee22-f6b3-41ae-b28c-3a61aaac8be4/ab-test/68200d9065dc0f433d443f33/player.js", s.async=!0,document.head.appendChild(s); </script>
+
+    <!-- ===== CONTADOR DE PESSOAS ASSISTINDO ===== -->
+<style>
+    .viewer-counter{
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: .6rem 0 1rem;
+      font-size: 1rem;
+      font-weight: bold;          /* tudo em negrito */
+      color:#111;                 /* texto preto */
+    }
+    .viewer-counter .count{
+      color:#b20000;              /* número vermelho */
+    }
+  </style>
+  
+  <script id="viewer-counter-script">
+  (function(){
+    /* 1. Cria o elemento logo abaixo desta <script> */
+    const counterEl = document.createElement('p');
+    counterEl.className = 'viewer-counter';
+    document.currentScript.insertAdjacentElement('afterend', counterEl);
+  
+    /* 2. Ponto de partida em torno de 305 */
+    let viewers = 305 + Math.floor(Math.random()*21) - 10;    // 295-315
+  
+    /* formata com ponto como separador de milhar */
+    const fmt = n => n.toLocaleString('de-DE');               // 1.234
+  
+    /* 3. Atualiza a cada 3 s, variando –2 … +3 */
+    function tick(){
+      viewers += Math.floor(Math.random()*6)-2;               // –2 a +3
+      if(viewers < 60) viewers = 60;                          // nunca <60
+      counterEl.innerHTML =
+        `<span class="count">${fmt(viewers)}</span> people watching now…`;
+    }
+    tick();                       // primeira renderização imediata
+    setInterval(tick, 3000);      // próximas atualizações
+  })();
+  </script>
+  <!-- ==== /CONTADOR ======================================================== -->
+
     
     <div class="trusted-logos">
       <img src="/assets/images/logo_news.webp" height="50" alt="Logo News" />
