@@ -146,46 +146,91 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
 
 <script type="text/javascript" id="scr_68200d9065dc0f433d443f33"> var s=document.createElement("script"); s.src="https://scripts.converteai.net/dc2bee22-f6b3-41ae-b28c-3a61aaac8be4/ab-test/68200d9065dc0f433d443f33/player.js", s.async=!0,document.head.appendChild(s); </script>
 
-    <!-- ===== CONTADOR DE PESSOAS ASSISTINDO ===== -->
-<style>
-    .viewer-counter{
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: .6rem 0 1rem;
-      font-size: 1rem;
-      font-weight: bold;          /* tudo em negrito */
-      color:#111;                 /* texto preto */
+
+    <!-- ▸ ELEMENTO DO ESTOQUE -->
+<div id="stock-counter"
+     style="display:none; font-family:Arial,sans-serif;
+            font-weight:bold; text-align:center; margin:.8rem 0 1.3rem;
+            font-size:1.1rem;">
+</div>
+
+<!-- ▸ SCRIPT -->
+<script>
+(function () {
+  const INITIAL = 152;              // início
+  const FINAL   = 15;               // destino
+  const REST_MS = 600_000;          // 10 min = 600 000 ms
+  const TICK_MS = 5_000;            // atualiza a cada 5 s
+  const OPTIONS = [6, 3, 1];        // tamanhos de queda
+
+  const K_LEFT     = 'stockLeft';
+  const K_RUNNING  = 'stockCounterRunning';
+  const K_DEADLINE = 'stockCounterDeadline';
+
+  /* util */
+  const $ = id => document.getElementById(id);
+
+  /* calcula estoque atual */
+  function getStock () {
+    const n = parseInt(localStorage.getItem(K_LEFT), 10);
+    return isNaN(n) ? INITIAL : n;
+  }
+
+  /* renderiza */
+  function render (n) {
+    const el = $('stock-counter');
+    if (!el) return;
+    el.style.display = 'block';
+    el.innerHTML =
+      `<span style="color:#b20000;">${n}</span> bottles available…`;
+  }
+
+  /* função global chamada após o pitch */
+  window.startStockCounter = function () {
+    if (localStorage.getItem(K_RUNNING)) return;        // já iniciou
+
+    let stock = getStock();
+    /* define deadline de término se não existir */
+    let deadline = parseInt(localStorage.getItem(K_DEADLINE), 10);
+    if (isNaN(deadline)) {
+      deadline = Date.now() + REST_MS;
+      localStorage.setItem(K_DEADLINE, deadline);
     }
-    .viewer-counter .count{
-      color:#b20000;              /* número vermelho */
-    }
-  </style>
-  
-  <script id="viewer-counter-script">
-  (function(){
-    /* 1. Cria o elemento logo abaixo desta <script> */
-    const counterEl = document.createElement('p');
-    counterEl.className = 'viewer-counter';
-    document.currentScript.insertAdjacentElement('afterend', counterEl);
-  
-    /* 2. Ponto de partida em torno de 305 */
-    let viewers = 305 + Math.floor(Math.random()*21) - 10;    // 295-315
-  
-    /* formata com ponto como separador de milhar */
-    const fmt = n => n.toLocaleString('de-DE');               // 1.234
-  
-    /* 3. Atualiza a cada 3 s, variando –2 … +3 */
-    function tick(){
-      viewers += Math.floor(Math.random()*6)-2;               // –2 a +3
-      if(viewers < 60) viewers = 60;                          // nunca <60
-      counterEl.innerHTML =
-        `<span class="count">${fmt(viewers)}</span> people watching now…`;
-    }
-    tick();                       // primeira renderização imediata
-    setInterval(tick, 3000);      // próximas atualizações
-  })();
-  </script>
-  <!-- ==== /CONTADOR ======================================================== -->
+
+    render(stock);
+
+    const int = setInterval(() => {
+      const now = Date.now();
+      const remainingTicks = Math.max(1, Math.ceil((deadline - now) / TICK_MS));
+      const dropsLeft      = stock - FINAL;
+
+      /* se já chegou ou passou do final, encerra */
+      if (dropsLeft <= 0 || remainingTicks <= 0) {
+        clearInterval(int);
+        stock = FINAL;
+        render(stock);
+        return;
+      }
+
+      /* escolhe passo permitido que não “fure” o mínimo */
+      const maxCanDrop = dropsLeft - (remainingTicks - 1) * 1; // preciso deixar ≥1 p/ cada tick restante
+      const choices = OPTIONS.filter(v => v <= maxCanDrop);
+      const step    = choices[Math.floor(Math.random() * choices.length)];
+
+      stock -= step;
+      localStorage.setItem(K_LEFT, stock);
+      render(stock);
+    }, TICK_MS);
+
+    localStorage.setItem(K_RUNNING, '1');
+  };
+
+  /* se já viu o pitch em visita anterior, ativa imediatamente */
+  if (localStorage.getItem('pitchView') === 'true') {
+    startStockCounter();
+  }
+})();
+</script>
 
     
     <div class="trusted-logos">
